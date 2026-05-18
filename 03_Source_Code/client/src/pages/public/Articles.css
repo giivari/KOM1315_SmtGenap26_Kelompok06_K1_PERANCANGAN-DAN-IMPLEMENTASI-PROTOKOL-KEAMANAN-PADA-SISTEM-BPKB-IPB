@@ -1,0 +1,16 @@
+.articles-page { padding-top: 70px; }
+.articles-hero {
+  background: linear-gradient(135deg, var(--color-primary-700), var(--color-primary-500));
+  color: white; text-align: center; padding: 60px 24px 40px;
+}
+.articles-hero h1 { margin-bottom: 8px; }
+.articles-hero p { opacity: 0.8; }
+.articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px,1fr)); gap: 24px; }
+.article-item { display: flex; flex-direction: column; text-decoration: none; color: inherit; }
+.article-item-img { height: 200px; background: var(--color-primary-100) center/cover no-repeat; }
+.article-placeholder { display: flex; align-items: center; justify-content: center; font-size: 3rem; background: linear-gradient(135deg, var(--color-primary-50), var(--color-primary-100)); }
+.article-item-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+.article-date { font-size: 0.8rem; color: var(--color-primary-500); font-weight: 600; margin-bottom: 8px; }
+.article-item-body h3 { font-size: 1.1rem; color: var(--color-primary-700); margin-bottom: 8px; }
+.article-item-body p { color: var(--color-text-secondary); font-size: 0.9rem; line-height: 1.6; flex: 1; margin-bottom: 12px; }
+.article-author { font-size: 0.85rem; color: var(--color-text-muted); }

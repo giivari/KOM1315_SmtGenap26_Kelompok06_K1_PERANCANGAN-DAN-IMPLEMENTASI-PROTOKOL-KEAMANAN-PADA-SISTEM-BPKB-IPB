@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id                  Int                  @id @default(autoincrement())
+  name                String
+  email               String               @unique
+  password            String
+  role                String               @default("user") // "user" or "admin"
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  otpCodes            OtpCode[]
+  auditLogs           AuditLog[]
+  authEvents          AuthEvent[]
+  authorizationEvents AuthorizationEvent[]
+}
+
+model Article {
+  id        Int      @id @default(autoincrement())
+  name      String
+  content   String
+  date      DateTime
+  author    String?
+  imagePath String?
+  isDraft   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Documentation {
+  id          Int      @id @default(autoincrement())
+  photoPath   String?
+  description String
+  date        DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Operation {
+  id       Int    @id @default(autoincrement())
+  category String @unique
+  value    Int    @default(0)
+  maxValue Int    @default(1500)
+}
+
+model OtpCode {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  code      String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  action    String
+  resource  String
+  details   String?  // JSON string
+  ipAddress String?
+  userAgent String?
+  timestamp DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+}
+
+model AuthEvent {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  email     String?
+  eventType String   // LOGIN_SUCCESS, LOGIN_FAILED, OTP_SENT, OTP_VERIFIED, OTP_FAILED, LOGOUT, REGISTER
+  ipAddress String?
+  userAgent String?
+  timestamp DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+}
+
+model AuthorizationEvent {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  route     String
+  method    String
+  role      String?
+  allowed   Boolean
+  timestamp DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+}

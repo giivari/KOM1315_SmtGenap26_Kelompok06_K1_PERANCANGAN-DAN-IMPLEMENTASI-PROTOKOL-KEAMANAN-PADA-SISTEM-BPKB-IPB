@@ -1,0 +1,62 @@
+.about-page { padding-top: 70px; }
+
+/* Intro */
+.about-intro { background: var(--color-bg); }
+.intro-card {
+  display: flex; align-items: center; gap: 40px;
+  background: var(--color-surface); border-radius: var(--radius-xl);
+  padding: 40px; box-shadow: var(--shadow-lg); max-width: 1000px; margin: 0 auto;
+}
+.intro-text { flex: 1; }
+.intro-label { font-size: 0.9rem; font-weight: 600; color: var(--color-text-secondary); }
+.intro-title { font-size: 5rem; font-weight: 900; color: var(--color-primary-500); line-height: 1; margin: 4px 0 8px; }
+.intro-subtitle { font-weight: 600; color: var(--color-primary-500); margin-bottom: 16px; font-size: 1.1rem; }
+.intro-desc { color: var(--color-primary-600); line-height: 1.7; }
+.intro-image { flex: 1; }
+.intro-image img { border-radius: var(--radius-lg); box-shadow: var(--shadow-md); width: 100%; height: 250px; object-fit: cover; }
+
+/* Fungsi */
+.fungsi-section { background: var(--color-bg); }
+.fungsi-wrapper {
+  display: flex; align-items: stretch; max-width: 900px; margin: 0 auto; position: relative;
+}
+.fungsi-accent {
+  width: 16px; background: var(--color-primary-700); border-radius: var(--radius-lg) 0 0 var(--radius-lg); flex-shrink: 0;
+}
+.fungsi-content {
+  background: var(--color-surface); border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  padding: 32px 40px; box-shadow: var(--shadow-md); flex: 1;
+}
+.fungsi-content h2 { text-align: center; color: var(--color-primary-700); margin-bottom: 20px; }
+.fungsi-content ul { list-style: disc; padding-left: 20px; }
+.fungsi-content li { color: var(--color-primary-600); margin-bottom: 12px; line-height: 1.6; }
+
+/* Team */
+.team-section { background: var(--color-primary-700); }
+.team-card {
+  background: var(--color-surface); border-radius: var(--radius-xl); padding: 32px;
+  max-width: 900px; margin: 0 auto; box-shadow: var(--shadow-lg);
+}
+.team-card h2 { text-align: center; color: var(--color-primary-700); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
+.team-photo { border-radius: var(--radius-lg); width: 100%; }
+
+/* Struktur */
+.struktur-section { background: var(--color-bg); }
+.struktur-desc { text-align: center; color: var(--color-primary-600); margin-bottom: 40px; font-size: 1.05rem; }
+.org-chart { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.org-row { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
+.org-line { width: 2px; height: 32px; background: var(--color-border); }
+.org-card {
+  background: var(--color-surface); border-radius: var(--radius-lg); padding: 20px 24px;
+  box-shadow: var(--shadow-md); border: 1px solid var(--color-border); width: 220px; text-align: center;
+}
+.org-card.org-head { width: 280px; background: linear-gradient(135deg, var(--color-primary-700), var(--color-primary-600)); color: white; }
+.org-card.org-head p { color: rgba(255,255,255,0.8); }
+.org-card h4 { font-size: 0.9rem; color: var(--color-primary-700); margin-bottom: 8px; }
+.org-card p { font-size: 0.85rem; color: var(--color-text-secondary); }
+.org-column { display: flex; flex-direction: column; gap: 12px; }
+
+@media (max-width: 768px) {
+  .intro-card { flex-direction: column; padding: 24px; }
+  .org-row { flex-direction: column; align-items: center; }
+}
