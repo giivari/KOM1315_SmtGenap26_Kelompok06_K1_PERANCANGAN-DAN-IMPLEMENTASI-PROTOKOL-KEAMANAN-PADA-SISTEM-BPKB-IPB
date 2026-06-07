@@ -19,13 +19,17 @@ export default function Header() {
           <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`}>Home</Link>
           <Link to="/about-us" className={`nav-link ${isActive('/about-us') ? 'active' : ''}`}>About Us</Link>
           <Link to="/articles" className={`nav-link ${isActive('/articles') ? 'active' : ''}`}>Berita</Link>
+          <Link to="/aspirations" className={`nav-link ${isActive('/aspirations') ? 'active' : ''}`}>Aspirasi</Link>
           <Link to="/document" className={`nav-link ${isActive('/document') ? 'active' : ''}`}>Document</Link>
+          {user && (
+            <Link to="/submit-article" className={`nav-link ${isActive('/submit-article') ? 'active' : ''}`}>Tulis Artikel</Link>
+          )}
         </nav>
 
         <div className="header-actions">
           {user ? (
             <div className="user-menu">
-              <span className="user-name">👋 {user.name}</span>
+              <span className="user-name">{user.name}</span>
               {isAdmin && (
                 <Link to="/admin" className="btn btn-sm btn-accent">Admin Panel</Link>
               )}

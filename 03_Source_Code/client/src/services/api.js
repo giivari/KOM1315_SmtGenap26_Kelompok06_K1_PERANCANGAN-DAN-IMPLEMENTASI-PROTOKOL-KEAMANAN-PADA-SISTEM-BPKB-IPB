@@ -49,6 +49,29 @@ export const articlesAPI = {
   create: (data) => api.post('/articles', data),
   update: (id, data) => api.put(`/articles/${id}`, data),
   delete: (id) => api.delete(`/articles/${id}`),
+  // User submission
+  submit: (data) => api.post('/articles/submit', data),
+  getMySubmissions: () => api.get('/articles/my-submissions'),
+  // Admin review
+  getPending: () => api.get('/articles/pending'),
+  review: (id, data) => api.put(`/articles/${id}/review`, data),
+};
+
+// Comments API
+export const commentsAPI = {
+  getByArticle: (articleId) => api.get(`/articles/${articleId}/comments`),
+  create: (articleId, content) => api.post(`/articles/${articleId}/comments`, { content }),
+  delete: (articleId, commentId) => api.delete(`/articles/${articleId}/comments/${commentId}`),
+};
+
+// Aspirations API
+export const aspirationsAPI = {
+  getPublic: () => api.get('/aspirations'),
+  create: (data) => api.post('/aspirations', data),
+  getMy: () => api.get('/aspirations/my'),
+  getAll: () => api.get('/aspirations/all'),
+  updateStatus: (id, data) => api.put(`/aspirations/${id}/status`, data),
+  delete: (id) => api.delete(`/aspirations/${id}`),
 };
 
 // Documentation API

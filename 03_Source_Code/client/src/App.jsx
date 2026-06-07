@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { Toaster } from 'sonner';
 
 // Layouts
 import Header from './components/Layout/Header';
@@ -13,6 +14,9 @@ import AboutUs from './pages/public/AboutUs';
 import Articles from './pages/public/Articles';
 import ArticleDetail from './pages/public/ArticleDetail';
 import Document from './pages/public/Document';
+import Aspirations from './pages/public/Aspirations';
+import SubmitArticle from './pages/public/SubmitArticle';
+import MySubmissions from './pages/public/MySubmissions';
 
 // Auth Pages
 import Login from './pages/auth/Login';
@@ -25,6 +29,7 @@ import AdminArticles from './pages/admin/AdminArticles';
 import AdminDocs from './pages/admin/AdminDocs';
 import AdminOps from './pages/admin/AdminOps';
 import SecurityDashboard from './pages/admin/SecurityDashboard';
+import AdminAspirations from './pages/admin/AdminAspirations';
 
 function App() {
   return (
@@ -37,6 +42,13 @@ function App() {
           <Route path="/articles" element={<><Header /><Articles /><Footer /></>} />
           <Route path="/articles/:id" element={<><Header /><ArticleDetail /><Footer /></>} />
           <Route path="/document" element={<><Header /><Document /><Footer /></>} />
+          <Route path="/aspirations" element={<><Header /><Aspirations /><Footer /></>} />
+          <Route path="/submit-article" element={<><Header /><SubmitArticle /><Footer /></>} />
+          <Route path="/my-submissions" element={
+            <ProtectedRoute>
+              <><Header /><MySubmissions /><Footer /></>
+            </ProtectedRoute>
+          } />
 
           {/* Auth Routes */}
           <Route path="/login" element={<Login />} />
@@ -54,9 +66,11 @@ function App() {
             <Route path="documentation" element={<AdminDocs />} />
             <Route path="operations" element={<AdminOps />} />
             <Route path="security" element={<SecurityDashboard />} />
+            <Route path="aspirations" element={<AdminAspirations />} />
           </Route>
         </Routes>
       </Router>
+      <Toaster position="top-right" richColors />
     </AuthProvider>
   );
 }

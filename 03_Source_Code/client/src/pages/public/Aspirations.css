@@ -1,0 +1,235 @@
+.aspirations-page {
+  padding-top: 100px;
+  padding-bottom: 48px;
+  min-height: 100vh;
+  background: var(--color-bg);
+}
+
+.aspirations-hero {
+  background: linear-gradient(135deg, #064e3b 0%, #059669 50%, #34d399 100%);
+  padding: 56px 24px;
+  text-align: center;
+  color: white;
+  margin-bottom: 40px;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  position: relative;
+  overflow: hidden;
+}
+
+.aspirations-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 400px;
+  height: 400px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+}
+
+.aspirations-hero h1 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.aspirations-hero p {
+  opacity: 0.9;
+  font-size: 1.05rem;
+  max-width: 650px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* Category pills */
+.category-pills {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.category-pill {
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.category-pill:hover {
+  border-color: var(--color-primary-500);
+  color: var(--color-primary-500);
+}
+
+.category-pill.active {
+  background: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  color: white;
+}
+
+/* Aspiration cards */
+.aspirations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+.aspiration-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  transition: all var(--transition-base);
+  border-left: 4px solid var(--color-primary-500);
+}
+
+.aspiration-card:hover {
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-3px);
+}
+
+.aspiration-card.cat-laporan_kerusakan {
+  border-left-color: var(--color-danger);
+}
+
+.aspiration-card.cat-pemborosan_energi {
+  border-left-color: var(--color-warning);
+}
+
+.aspiration-card.cat-ide_penghijauan {
+  border-left-color: var(--color-success);
+}
+
+.aspiration-card.cat-lainnya {
+  border-left-color: var(--color-info);
+}
+
+.aspiration-card-body {
+  padding: 20px;
+}
+
+.aspiration-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.aspiration-card-header h3 {
+  font-size: 1.05rem;
+  color: var(--color-text);
+  margin: 0;
+  flex: 1;
+}
+
+.aspiration-card-desc {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.aspiration-card-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.aspiration-card-meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.aspiration-card-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.aspiration-admin-note {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: var(--color-info-soft);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  color: var(--color-info);
+}
+
+/* Submit form overlay */
+.aspiration-form-section {
+  margin-bottom: 40px;
+}
+
+.aspiration-form-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: 32px;
+  animation: fadeInUp 0.5s ease both;
+}
+
+.aspiration-form-card h2 {
+  color: var(--color-primary-700);
+  margin-bottom: 8px;
+  font-size: 1.4rem;
+}
+
+.aspiration-form-card .form-subtitle {
+  color: var(--color-text-secondary);
+  margin-bottom: 24px;
+  font-size: 0.95rem;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Status dot */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+}
+
+.status-dot.pending { background: var(--color-warning); }
+.status-dot.in_progress { background: var(--color-info); }
+.status-dot.resolved { background: var(--color-success); }
+.status-dot.dismissed { background: var(--color-text-muted); }
+
+/* Toggle form button */
+.toggle-form-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .aspirations-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .aspiration-form-card {
+    padding: 20px;
+  }
+}
