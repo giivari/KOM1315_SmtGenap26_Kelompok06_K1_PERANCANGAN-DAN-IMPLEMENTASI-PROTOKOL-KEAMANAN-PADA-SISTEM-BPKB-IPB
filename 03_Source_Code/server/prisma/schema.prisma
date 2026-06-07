@@ -19,29 +19,66 @@ model User {
   auditLogs           AuditLog[]
   authEvents          AuthEvent[]
   authorizationEvents AuthorizationEvent[]
+  submittedArticles   Article[]            @relation("SubmittedArticles")
+  reviewedArticles    Article[]            @relation("ReviewedArticles")
+  comments            Comment[]
+  aspirations         Aspiration[]
 }
 
 model Article {
+  id          Int       @id @default(autoincrement())
+  name        String
+  content     String
+  date        DateTime
+  author      String?
+  imagePath   String?
+  isDraft     Boolean   @default(true)
+  status      String    @default("draft") // "draft", "pending", "approved", "rejected"
+  submittedBy Int?
+  reviewedBy  Int?
+  reviewNote  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  submitter   User?     @relation("SubmittedArticles", fields: [submittedBy], references: [id])
+  reviewer    User?     @relation("ReviewedArticles", fields: [reviewedBy], references: [id])
+  comments    Comment[]
+}
+
+model Comment {
   id        Int      @id @default(autoincrement())
-  name      String
   content   String
-  date      DateTime
-  author    String?
-  imagePath String?
-  isDraft   Boolean  @default(true)
+  articleId Int
+  userId    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Aspiration {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String
+  category    String    // "laporan_kerusakan", "pemborosan_energi", "ide_penghijauan", "lainnya"
+  location    String?
+  imagePath   String?
+  status      String    @default("pending") // "pending", "in_progress", "resolved", "dismissed"
+  priority    String    @default("normal")  // "low", "normal", "high", "urgent"
+  userId      Int
+  adminNote   String?
+  resolvedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id])
 }
 
 model Documentation {
-  id               Int      @id @default(autoincrement())
-  photoPath        String?
-  description      String
-  date             DateTime
-  documentHash     String?  
-  digitalSignature String?  
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  photoPath   String?
+  description String
+  date        DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Operation {
@@ -62,28 +99,26 @@ model OtpCode {
 }
 
 model AuditLog {
-  id          Int      @id @default(autoincrement())
-  userId      Int?
-  action      String
-  resource    String
-  details     String?  
-  ipAddress   String?  
-  ipAddressIv String?  
-  userAgent   String?
-  timestamp   DateTime @default(now())
-  user        User?    @relation(fields: [userId], references: [id])
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  action    String
+  resource  String
+  details   String?  // JSON string
+  ipAddress String?
+  userAgent String?
+  timestamp DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
 }
 
 model AuthEvent {
-  id          Int      @id @default(autoincrement())
-  userId      Int?
-  email       String?
-  eventType   String   
-  ipAddress   String?  
-  ipAddressIv String?  
-  userAgent   String?
-  timestamp   DateTime @default(now())
-  user        User?    @relation(fields: [userId], references: [id])
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  email     String?
+  eventType String   // LOGIN_SUCCESS, LOGIN_FAILED, OTP_SENT, OTP_VERIFIED, OTP_FAILED, LOGOUT, REGISTER
+  ipAddress String?
+  userAgent String?
+  timestamp DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
 }
 
 model AuthorizationEvent {

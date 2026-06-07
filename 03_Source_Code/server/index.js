@@ -7,6 +7,8 @@ require('dotenv').config();
 
 const authRoutes = require('./src/routes/auth');
 const articleRoutes = require('./src/routes/articles');
+const commentRoutes = require('./src/routes/comments');
+const aspirationRoutes = require('./src/routes/aspirations');
 const documentationRoutes = require('./src/routes/documentation');
 const operationRoutes = require('./src/routes/operations');
 const securityRoutes = require('./src/routes/security');
@@ -44,6 +46,7 @@ app.use(helmet({
     },
   },
   crossOriginEmbedderPolicy: false,  // Nonaktifkan agar gambar bisa dimuat
+  crossOriginResourcePolicy: { policy: "cross-origin" }, // Izinkan frontend load gambar dari server
   hsts: {
     maxAge: 31536000,           // 1 tahun
     includeSubDomains: true,
@@ -163,6 +166,8 @@ app.use('/api', globalLimiter);
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/articles', articleRoutes);
+app.use('/api/articles/:articleId/comments', commentRoutes);
+app.use('/api/aspirations', aspirationRoutes);
 app.use('/api/documentation', documentationRoutes);
 app.use('/api/operations', operationRoutes);
 app.use('/api/security', securityRoutes);
