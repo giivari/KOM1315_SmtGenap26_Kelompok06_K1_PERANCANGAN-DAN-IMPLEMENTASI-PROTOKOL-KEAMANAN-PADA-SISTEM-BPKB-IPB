@@ -2,6 +2,7 @@ const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const { authenticate } = require('../middleware/auth');
 const { authorize } = require('../middleware/authorize');
+const { generateHash, signData } = require('../utils/crypto_rsa'); // Import fungsi RSA
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -45,15 +46,28 @@ router.post('/', authenticate, authorize('admin'), async (req, res) => {
     if (!description || !date) {
       return res.status(400).json({ error: 'Description and date are required.' });
     }
+
+    // --- PROSES TANDA TANGAN DIGITAL ---
+    // 1. Gabungkan data penting yang ingin dijamin keasliannya
+    const rawDataString = `${description}|${new Date(date).toISOString()}|${photoPath || ''}`;
+    
+    // 2. Buat Hash dan Signature
+    const docHash = generateHash(rawDataString);
+    const signature = signData(rawDataString);
+    // -----------------------------------
+
     const doc = await prisma.documentation.create({
       data: {
         description,
         date: new Date(date),
         photoPath: photoPath || null,
+        documentHash: docHash,           // Simpan Hash
+        digitalSignature: signature      // Simpan Tanda Tangan
       }
     });
     res.status(201).json(doc);
   } catch (error) {
+    console.error('Create documentation error:', error);
     res.status(500).json({ error: 'Internal server error.' });
   }
 });
@@ -64,16 +78,42 @@ router.post('/', authenticate, authorize('admin'), async (req, res) => {
 router.put('/:id', authenticate, authorize('admin'), async (req, res) => {
   try {
     const { description, date, photoPath } = req.body;
+    
+    // Kita harus memastikan data yang ditandatangani adalah data terbaru
+    const parsedDate = date ? new Date(date) : undefined;
+    
+    // Ambil data lama jika ada field yang tidak di-update oleh user
+    const existingDoc = await prisma.documentation.findUnique({
+      where: { id: parseInt(req.params.id) }
+    });
+
+    if (!existingDoc) {
+      return res.status(404).json({ error: 'Documentation not found.' });
+    }
+
+    const finalDescription = description || existingDoc.description;
+    const finalDate = parsedDate || existingDoc.date;
+    const finalPhotoPath = photoPath !== undefined ? photoPath : existingDoc.photoPath;
+
+    // --- PROSES PEMBARUAN TANDA TANGAN DIGITAL ---
+    const rawDataString = `${finalDescription}|${finalDate.toISOString()}|${finalPhotoPath || ''}`;
+    const docHash = generateHash(rawDataString);
+    const signature = signData(rawDataString);
+    // ---------------------------------------------
+
     const doc = await prisma.documentation.update({
       where: { id: parseInt(req.params.id) },
       data: {
-        description,
-        date: date ? new Date(date) : undefined,
-        photoPath,
+        description: finalDescription,
+        date: finalDate,
+        photoPath: finalPhotoPath,
+        documentHash: docHash,
+        digitalSignature: signature
       }
     });
     res.json(doc);
   } catch (error) {
+    console.error('Update documentation error:', error);
     res.status(500).json({ error: 'Internal server error.' });
   }
 });

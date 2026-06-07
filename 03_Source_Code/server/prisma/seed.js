@@ -1,7 +1,22 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
 const prisma = new PrismaClient();
+
+// Kunci rahasia untuk AES-256 (harus sama persis dengan yang ada di env/audit/security)
+const SECRET_KEY = process.env.ENCRYPTION_KEY || 'BpkbIpbSecretKeyUntukAes256Crypt';
+
+/**
+ * Fungsi bantuan untuk mengenkripsi IP di data seed menggunakan AES-256-CBC
+ */
+function encryptIP(ip) {
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(SECRET_KEY), iv);
+  let encrypted = cipher.update(ip, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  return { encryptedData: encrypted, iv: iv.toString('hex') };
+}
 
 async function main() {
   console.log('🌱 Seeding database...');
@@ -59,7 +74,7 @@ async function main() {
   console.log('✅ Users created');
 
   // ===== ARTICLES (from existing data) =====
-  const articles = await prisma.article.createMany({
+  await prisma.article.createMany({
     data: [
       {
         name: 'IPB University Raih Peringkat 29 UI GreenMetric 2024',
@@ -182,11 +197,16 @@ async function main() {
         }
       }
 
+      // --- ENKRIPSI IP ADDRESS UNTUK AUTH EVENTS ---
+      const rawIp = ips[Math.floor(Math.random() * ips.length)];
+      const { encryptedData, iv } = encryptIP(rawIp);
+
       authEvents.push({
         userId: eventType !== 'LOGIN_FAILED' ? user.id : (Math.random() > 0.5 ? user.id : null),
         email: user.email,
         eventType,
-        ipAddress: ips[Math.floor(Math.random() * ips.length)],
+        ipAddress: encryptedData, // IP dienkripsi
+        ipAddressIv: iv,          // IV disimpan
         userAgent: agents[Math.floor(Math.random() * agents.length)],
         timestamp: eventDate,
       });
@@ -263,12 +283,17 @@ async function main() {
       const eventDate = new Date(date);
       eventDate.setHours(hour, Math.floor(Math.random() * 60), Math.floor(Math.random() * 60));
 
+      // --- ENKRIPSI IP ADDRESS UNTUK AUDIT LOGS ---
+      const rawIp = ips[Math.floor(Math.random() * ips.length)];
+      const { encryptedData, iv } = encryptIP(rawIp);
+
       auditLogs.push({
         userId: Math.random() > 0.2 ? user.id : null,
         action,
         resource,
         details: JSON.stringify({ statusCode: Math.random() > 0.1 ? 200 : (Math.random() > 0.5 ? 403 : 401), duration: `${Math.floor(Math.random() * 200) + 10}ms` }),
-        ipAddress: ips[Math.floor(Math.random() * ips.length)],
+        ipAddress: encryptedData, // IP dienkripsi
+        ipAddressIv: iv,          // IV disimpan
         userAgent: agents[Math.floor(Math.random() * agents.length)],
         timestamp: eventDate,
       });

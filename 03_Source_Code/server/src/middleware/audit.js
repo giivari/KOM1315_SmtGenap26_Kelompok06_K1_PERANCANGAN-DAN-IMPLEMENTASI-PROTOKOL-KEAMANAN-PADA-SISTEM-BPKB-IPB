@@ -1,10 +1,36 @@
 const { PrismaClient } = require('@prisma/client');
+const crypto = require('crypto');
 const prisma = new PrismaClient();
+
+// Kunci rahasia 32 karakter (256-bit) untuk AES-256
+// Di lingkungan produksi (production), variabel ini WAJIB ditaruh di dalam file .env
+const SECRET_KEY = process.env.ENCRYPTION_KEY || 'BpkbIpbSecretKeyUntukAes256Crypt';
+
+/**
+ * Fungsi bantuan untuk mengenkripsi IP Address menggunakan AES-256-CBC
+ */
+function encryptIP(ip) {
+  if (!ip) return { encryptedData: null, iv: null };
+  
+  // Generate Initialization Vector (IV) acak sebesar 16 byte
+  const iv = crypto.randomBytes(16); 
+  
+  // Buat objek cipher
+  const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(SECRET_KEY), iv);
+  
+  // Lakukan enkripsi
+  let encrypted = cipher.update(ip, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  
+  return {
+    encryptedData: encrypted,
+    iv: iv.toString('hex')
+  };
+}
 
 /**
  * Accounting / Audit Middleware
  * Logs every API request to the audit_logs table
- * Records: user, action (method + path), resource, IP, user agent, timestamp
  */
 const auditMiddleware = async (req, res, next) => {
   // Skip logging for security dashboard reads to avoid noise
@@ -15,7 +41,6 @@ const auditMiddleware = async (req, res, next) => {
     return next();
   }
 
-  // Log after the response is sent
   const startTime = Date.now();
   
   res.on('finish', async () => {
@@ -24,6 +49,13 @@ const auditMiddleware = async (req, res, next) => {
       const action = `${req.method} ${req.path}`;
       const resource = req.path.split('/')[1] || 'unknown';
       const duration = Date.now() - startTime;
+      
+      // Tangkap IP Address asli
+      const rawIp = req.ip || req.connection?.remoteAddress;
+      
+      // --- PROSES ENKRIPSI ---
+      const { encryptedData, iv } = encryptIP(rawIp);
+      // -----------------------
       
       await prisma.auditLog.create({
         data: {
@@ -36,7 +68,8 @@ const auditMiddleware = async (req, res, next) => {
             query: Object.keys(req.query).length > 0 ? req.query : undefined,
             body: req.method !== 'GET' ? sanitizeBody(req.body) : undefined,
           }),
-          ipAddress: req.ip || req.connection?.remoteAddress,
+          ipAddress: encryptedData, // Disimpan sebagai Ciphertext (acak)
+          ipAddressIv: iv,          // Disimpan agar bisa didekripsi nanti
           userAgent: req.headers['user-agent'] || 'unknown',
         }
       });

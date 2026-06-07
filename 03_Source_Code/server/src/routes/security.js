@@ -1,10 +1,34 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
+const crypto = require('crypto'); // Tambahkan modul crypto bawaan Node.js
 const { authenticate } = require('../middleware/auth');
 const { authorize } = require('../middleware/authorize');
 
 const router = express.Router();
 const prisma = new PrismaClient();
+
+// Kunci rahasia harus sama persis dengan yang ada di audit.js
+const SECRET_KEY = process.env.ENCRYPTION_KEY || 'BpkbIpbSecretKeyUntukAes256Crypt';
+
+/**
+ * Fungsi bantuan untuk mendekripsi IP Address menggunakan AES-256-CBC
+ */
+function decryptIP(ciphertext, ivHex) {
+  if (!ciphertext || !ivHex) return ciphertext; // Kembalikan nilai asli jika tidak terenkripsi
+  try {
+    const decipher = crypto.createDecipheriv(
+      'aes-256-cbc', 
+      Buffer.from(SECRET_KEY), 
+      Buffer.from(ivHex, 'hex')
+    );
+    let decrypted = decipher.update(ciphertext, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+  } catch (error) {
+    console.error('Decryption failed:', error.message);
+    return 'Decryption Error';
+  }
+}
 
 /**
  * GET /api/security/summary
@@ -49,14 +73,12 @@ router.get('/auth-stats', authenticate, authorize('admin'), async (req, res) => 
   try {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-    // Get all auth events from last 30 days
     const events = await prisma.authEvent.findMany({
       where: { timestamp: { gte: thirtyDaysAgo } },
       orderBy: { timestamp: 'asc' },
       select: { eventType: true, timestamp: true },
     });
 
-    // Group by day
     const dailyStats = {};
     events.forEach(event => {
       const day = event.timestamp.toISOString().split('T')[0];
@@ -77,23 +99,28 @@ router.get('/auth-stats', authenticate, authorize('admin'), async (req, res) => 
       }
     });
 
-    // Event type totals
     const totals = {};
     events.forEach(event => {
       totals[event.eventType] = (totals[event.eventType] || 0) + 1;
     });
 
-    // Recent events
     const recentEvents = await prisma.authEvent.findMany({
       take: 20,
       orderBy: { timestamp: 'desc' },
       include: { user: { select: { name: true, email: true } } },
     });
 
+    // --- PROSES DEKRIPSI IP UNTUK RECENT AUTH EVENTS ---
+    const decryptedRecentEvents = recentEvents.map(event => ({
+      ...event,
+      ipAddress: decryptIP(event.ipAddress, event.ipAddressIv)
+    }));
+    // --------------------------------------------------
+
     res.json({
       daily: Object.values(dailyStats),
       totals,
-      recentEvents,
+      recentEvents: decryptedRecentEvents,
     });
   } catch (error) {
     console.error('Auth stats error:', error);
@@ -114,10 +141,9 @@ router.get('/authz-stats', authenticate, authorize('admin'), async (req, res) =>
       orderBy: { timestamp: 'asc' },
     });
 
-    // Group by route
     const routeStats = {};
     events.forEach(event => {
-      const route = event.route.split('?')[0]; // Remove query params
+      const route = event.route.split('?')[0];
       if (!routeStats[route]) {
         routeStats[route] = { route, allowed: 0, denied: 0 };
       }
@@ -128,7 +154,6 @@ router.get('/authz-stats', authenticate, authorize('admin'), async (req, res) =>
       }
     });
 
-    // Group by role
     const roleStats = {};
     events.forEach(event => {
       const role = event.role || 'anonymous';
@@ -142,7 +167,6 @@ router.get('/authz-stats', authenticate, authorize('admin'), async (req, res) =>
       }
     });
 
-    // Daily stats
     const dailyStats = {};
     events.forEach(event => {
       const day = event.timestamp.toISOString().split('T')[0];
@@ -156,7 +180,6 @@ router.get('/authz-stats', authenticate, authorize('admin'), async (req, res) =>
       }
     });
 
-    // Recent events
     const recentEvents = await prisma.authorizationEvent.findMany({
       take: 20,
       orderBy: { timestamp: 'desc' },
@@ -186,11 +209,12 @@ router.get('/audit-logs', authenticate, authorize('admin'), async (req, res) => 
     const search = req.query.search || '';
     const skip = (page - 1) * limit;
 
+    // Catatan: Pencarian langsung menggunakan 'contains' pada ipAddress ciphertext database tidak akan akurat.
+    // Filter pencarian di bawah dipertahankan agar fitur pencarian 'action' dan 'resource' tidak rusak.
     const where = search ? {
       OR: [
         { action: { contains: search, mode: 'insensitive' } },
         { resource: { contains: search, mode: 'insensitive' } },
-        { ipAddress: { contains: search, mode: 'insensitive' } },
       ]
     } : {};
 
@@ -205,8 +229,15 @@ router.get('/audit-logs', authenticate, authorize('admin'), async (req, res) => 
       prisma.auditLog.count({ where }),
     ]);
 
+    // --- PROSES DEKRIPSI IP UNTUK SETIAP BARIS LOG ---
+    const decryptedLogs = logs.map(log => ({
+      ...log,
+      ipAddress: decryptIP(log.ipAddress, log.ipAddressIv)
+    }));
+    // -------------------------------------------------
+
     res.json({
-      logs,
+      logs: decryptedLogs,
       total,
       page,
       totalPages: Math.ceil(total / limit),
