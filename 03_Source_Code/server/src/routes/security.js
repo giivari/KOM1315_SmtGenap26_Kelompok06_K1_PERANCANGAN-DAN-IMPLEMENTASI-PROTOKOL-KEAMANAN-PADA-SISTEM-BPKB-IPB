@@ -40,15 +40,13 @@ router.get('/summary', authenticate, authorize('admin'), async (req, res) => {
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const thirtyDaysAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
 
-    const [totalAuthEvents, todayAuthEvents, totalAuditLogs, todayAuditLogs, totalAuthzEvents, deniedAuthzEvents, totalUsers] = await Promise.all([
-      prisma.authEvent.count({ where: { timestamp: { gte: thirtyDaysAgo } } }),
-      prisma.authEvent.count({ where: { timestamp: { gte: today } } }),
-      prisma.auditLog.count({ where: { timestamp: { gte: thirtyDaysAgo } } }),
-      prisma.auditLog.count({ where: { timestamp: { gte: today } } }),
-      prisma.authorizationEvent.count({ where: { timestamp: { gte: thirtyDaysAgo } } }),
-      prisma.authorizationEvent.count({ where: { allowed: false, timestamp: { gte: thirtyDaysAgo } } }),
-      prisma.user.count(),
-    ]);
+    const totalAuthEvents = await prisma.authEvent.count({ where: { timestamp: { gte: thirtyDaysAgo } } });
+    const todayAuthEvents = await prisma.authEvent.count({ where: { timestamp: { gte: today } } });
+    const totalAuditLogs = await prisma.auditLog.count({ where: { timestamp: { gte: thirtyDaysAgo } } });
+    const todayAuditLogs = await prisma.auditLog.count({ where: { timestamp: { gte: today } } });
+    const totalAuthzEvents = await prisma.authorizationEvent.count({ where: { timestamp: { gte: thirtyDaysAgo } } });
+    const deniedAuthzEvents = await prisma.authorizationEvent.count({ where: { allowed: false, timestamp: { gte: thirtyDaysAgo } } });
+    const totalUsers = await prisma.user.count();
 
     res.json({
       totalAuthEvents,

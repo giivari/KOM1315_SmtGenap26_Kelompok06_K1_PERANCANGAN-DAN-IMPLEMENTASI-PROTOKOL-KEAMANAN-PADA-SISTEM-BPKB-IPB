@@ -37,12 +37,10 @@ export default function SecurityDashboard() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [sumRes, authRes, authzRes, auditRes] = await Promise.all([
-        securityAPI.getSummary(),
-        securityAPI.getAuthStats(),
-        securityAPI.getAuthzStats(),
-        securityAPI.getAuditLogs(1, 10)
-      ]);
+      const sumRes = await securityAPI.getSummary();
+      const authRes = await securityAPI.getAuthStats();
+      const authzRes = await securityAPI.getAuthzStats();
+      const auditRes = await securityAPI.getAuditLogs(1, 10);
       setSummary(sumRes.data);
       setAuthStats(authRes.data);
       setAuthzStats(authzRes.data);
