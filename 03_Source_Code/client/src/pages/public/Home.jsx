@@ -16,9 +16,9 @@ export default function Home() {
   const [operations, setOperations] = useState([]);
 
   useEffect(() => {
-    articlesAPI.getPublished().then(r => setArticles(r.data.slice(0, 3))).catch(() => {});
-    documentationAPI.getAll().then(r => setDocumentations(r.data.slice(0, 10))).catch(() => {});
-    operationsAPI.getAll().then(r => setOperations(r.data)).catch(() => {});
+    articlesAPI.getPublished().then(r => setArticles(Array.isArray(r.data) ? r.data.slice(0, 3) : [])).catch(() => {});
+    documentationAPI.getAll().then(r => setDocumentations(Array.isArray(r.data) ? r.data.slice(0, 10) : [])).catch(() => {});
+    operationsAPI.getAll().then(r => setOperations(Array.isArray(r.data) ? r.data : [])).catch(() => {});
   }, []);
 
   const opsIcons = {
