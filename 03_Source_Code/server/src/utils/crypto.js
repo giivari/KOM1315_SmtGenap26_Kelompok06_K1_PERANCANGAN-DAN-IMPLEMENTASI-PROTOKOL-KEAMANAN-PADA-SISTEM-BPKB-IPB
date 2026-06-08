@@ -187,6 +187,7 @@ function generateEncryptionKey() {
 module.exports = {
   // SHA-256
   hashSHA256,
+  generateHash: hashSHA256,
   verifySHA256,
   // AES-256-GCM
   encryptAES,

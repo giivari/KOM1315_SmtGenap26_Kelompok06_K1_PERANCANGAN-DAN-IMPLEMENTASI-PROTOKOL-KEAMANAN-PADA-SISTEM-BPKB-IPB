@@ -41,24 +41,38 @@ function verifyOTP(inputCode, storedHash) {
 
 /**
  * Create email transporter
- * Uses Ethereal (fake SMTP) in development if no SMTP config is provided
+ * 
+ * Di production: WAJIB memiliki SMTP config, throw error jika tidak ada
+ * Di development: Fallback ke Ethereal (fake SMTP) untuk testing
  */
 async function createTransporter() {
+  const smtpHost = process.env.SMTP_HOST;
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+
   // If SMTP config is provided, use it
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+  if (smtpHost && smtpUser && smtpPass) {
     return nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
+      host: smtpHost,
       port: parseInt(process.env.SMTP_PORT) || 587,
-      secure: false,
+      secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user: smtpUser,
+        pass: smtpPass,
       },
     });
   }
 
+  // Di production, SMTP credentials WAJIB ada
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      'SMTP credentials are required in production. ' +
+      'Please set SMTP_HOST, SMTP_USER, and SMTP_PASS environment variables.'
+    );
+  }
+
   // Fallback: create Ethereal test account (dev only)
-  console.log('⚠️  No SMTP config found. Using Ethereal test email...');
+  console.warn('⚠️  No SMTP config found. Using Ethereal test email (dev only)...');
   const testAccount = await nodemailer.createTestAccount();
   return nodemailer.createTransport({
     host: 'smtp.ethereal.email',
@@ -73,17 +87,28 @@ async function createTransporter() {
 
 /**
  * Send OTP code via email
- * @param {string} to - Recipient email address
+ * 
+ * Keamanan:
+ * - Parameter `to` harus diisi dari data User di database, BUKAN dari input request langsung
+ * - OTP plaintext TIDAK di-log ke console di production
+ * 
+ * @param {string} to - Recipient email address (dari database User.email)
  * @param {string} code - 6-digit OTP code
  * @param {string} userName - User's name for personalization
  */
 async function sendOTPEmail(to, code, userName = 'User') {
-  const transporter = await createTransporter();
+  let transporter;
+  try {
+    transporter = await createTransporter();
+  } catch (err) {
+    console.error('❌ Failed to create email transporter:', err.message);
+    throw err; // Propagate error — caller HARUS handle ini
+  }
 
   const mailOptions = {
     from: process.env.SMTP_FROM || '"BPKB IPB" <noreply@bpkb-ipb.ac.id>',
     to,
-    subject: `🔐 Kode OTP Login BPKB IPB - ${code}`,
+    subject: `🔐 Kode OTP Login BPKB IPB`,
     html: `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: #f8fafc;">
         <div style="background: linear-gradient(135deg, #0B1E4D, #2D55AC); padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
@@ -114,16 +139,23 @@ async function sendOTPEmail(to, code, userName = 'User') {
     `,
   };
 
-  const info = await transporter.sendMail(mailOptions);
-  
-  // Log preview URL for Ethereal (dev only)
-  const previewUrl = nodemailer.getTestMessageUrl(info);
-  if (previewUrl) {
-    console.log('📧 OTP Email Preview URL:', previewUrl);
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    
+    // Log preview URL for Ethereal (dev only)
+    const previewUrl = nodemailer.getTestMessageUrl(info);
+    if (previewUrl) {
+      console.log('📧 OTP Email Preview URL:', previewUrl);
+    }
+    
+    // KEAMANAN: Jangan log OTP plaintext, hanya log bahwa email terkirim
+    console.log(`📨 OTP email sent to ${to}`);
+    return info;
+  } catch (sendError) {
+    console.error(`❌ Failed to send OTP email to ${to}:`, sendError.message);
+    throw sendError; // Propagate — caller harus tahu jika email gagal terkirim
   }
-  
-  console.log(`📨 OTP ${code} sent to ${to}`);
-  return info;
 }
 
 module.exports = { generateOTP, hashOTP, verifyOTP, sendOTPEmail };
+

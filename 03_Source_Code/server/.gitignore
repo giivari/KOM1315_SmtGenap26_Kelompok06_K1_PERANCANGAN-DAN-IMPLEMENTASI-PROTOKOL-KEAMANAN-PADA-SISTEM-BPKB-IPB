@@ -3,3 +3,10 @@ node_modules
 .env
 
 /generated/prisma
+
+# SQLite dev database (no longer used — now using PostgreSQL)
+prisma/dev.db
+prisma/dev.db-journal
+
+# Uploaded files (jangan commit ke repo)
+uploads/

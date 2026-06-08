@@ -172,13 +172,12 @@ router.post('/login', async (req, res) => {
       }
     });
 
-    // Send plaintext OTP via email
+    // Send plaintext OTP via email (tujuan email diambil dari database user, BUKAN dari request)
     try {
-      console.log(`\n\n[DEV] OTP Code for ${user.email} is: ${otpPlaintext}\n\n`);
       await sendOTPEmail(user.email, otpPlaintext, user.name);
     } catch (emailError) {
-      console.error('Email sending failed:', emailError);
-      // Still return success - OTP is in the console for dev
+      console.error('Email sending failed:', emailError.message);
+      return res.status(500).json({ error: 'Failed to send OTP email. Please try again later.' });
     }
 
     // Log OTP sent event
@@ -378,12 +377,12 @@ router.post('/resend-otp', async (req, res) => {
       data: { userId, code: otpHash, expiresAt }
     });
 
-    // Send OTP via email
+    // Send OTP via email (tujuan email diambil dari database user, BUKAN dari request)
     try {
-      console.log(`\n\n[DEV] OTP Code for ${user.email} is: ${otpPlaintext}\n\n`);
       await sendOTPEmail(user.email, otpPlaintext, user.name);
     } catch (emailError) {
-      console.error('Email sending failed:', emailError);
+      console.error('Email sending failed:', emailError.message);
+      return res.status(500).json({ error: 'Failed to send OTP email. Please try again later.' });
     }
 
     // Log event

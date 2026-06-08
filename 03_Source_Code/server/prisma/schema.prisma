@@ -3,8 +3,10 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+
 }
 
 model User {
@@ -73,12 +75,14 @@ model Aspiration {
 }
 
 model Documentation {
-  id          Int      @id @default(autoincrement())
-  photoPath   String?
-  description String
-  date        DateTime
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id               Int      @id @default(autoincrement())
+  photoPath        String?
+  description      String
+  date             DateTime
+  documentHash     String?
+  digitalSignature String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model Operation {
@@ -99,26 +103,28 @@ model OtpCode {
 }
 
 model AuditLog {
-  id        Int      @id @default(autoincrement())
-  userId    Int?
-  action    String
-  resource  String
-  details   String?  // JSON string
-  ipAddress String?
-  userAgent String?
-  timestamp DateTime @default(now())
-  user      User?    @relation(fields: [userId], references: [id])
+  id          Int      @id @default(autoincrement())
+  userId      Int?
+  action      String
+  resource    String
+  details     String?  // JSON string
+  ipAddress   String?
+  ipAddressIv String?
+  userAgent   String?
+  timestamp   DateTime @default(now())
+  user        User?    @relation(fields: [userId], references: [id])
 }
 
 model AuthEvent {
-  id        Int      @id @default(autoincrement())
-  userId    Int?
-  email     String?
-  eventType String   // LOGIN_SUCCESS, LOGIN_FAILED, OTP_SENT, OTP_VERIFIED, OTP_FAILED, LOGOUT, REGISTER
-  ipAddress String?
-  userAgent String?
-  timestamp DateTime @default(now())
-  user      User?    @relation(fields: [userId], references: [id])
+  id          Int      @id @default(autoincrement())
+  userId      Int?
+  email       String?
+  eventType   String   // LOGIN_SUCCESS, LOGIN_FAILED, OTP_SENT, OTP_VERIFIED, OTP_FAILED, LOGOUT, REGISTER
+  ipAddress   String?
+  ipAddressIv String?
+  userAgent   String?
+  timestamp   DateTime @default(now())
+  user        User?    @relation(fields: [userId], references: [id])
 }
 
 model AuthorizationEvent {
