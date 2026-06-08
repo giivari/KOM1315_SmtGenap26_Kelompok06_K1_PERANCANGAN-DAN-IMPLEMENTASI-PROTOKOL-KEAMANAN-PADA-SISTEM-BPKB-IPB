@@ -178,6 +178,8 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+console.log('PORT ENV =', process.env.PORT);
+
 app.listen(PORT, () => {
   console.log(`🚀 BPKB IPB Server running on port ${PORT}`);
   console.log(`📡 API: http://localhost:${PORT}/api`);
