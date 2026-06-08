@@ -1,5 +1,5 @@
 # KOM1315_SmtGenap26_Kelompok06_K1_PERANCANGAN-DAN-IMPLEMENTASI-PROTOKOL-KEAMANAN-PADA-SISTEM-BPKB-IPB
-# BPKB IPB (Badan Pengembangan Kampus Berlanjutan)
+# BPKB IPB (Badan Pengembangan Kampus Berkelanjutan)
 # About
 Website BPKB IPB merupakan platform dari BPKB IPB (Badan Pengembangan Kampus Berkelanjutan) yang diperuntukan untuk mengenalkan BPKB itu sendiri, mulai dari penjelasan dan manfaat akan keberadaanya BPKB IPB. Hingga kegiatan BPKB IPB. Hal ini agar antusiasme dari end user untuk Kampus Berkelanjutan semakin meningkat.
 # Tim Kami
