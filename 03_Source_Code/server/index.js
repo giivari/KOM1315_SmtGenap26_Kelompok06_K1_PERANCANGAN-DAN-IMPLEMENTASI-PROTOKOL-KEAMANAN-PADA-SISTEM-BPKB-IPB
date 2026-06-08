@@ -202,12 +202,12 @@ process.on('unhandledRejection', (err) => {
   console.error('UNHANDLED REJECTION:', err);
 });
 
-const server = app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(process.env.PORT || 5000, '::', () => {
   console.log("PORT ENV =", process.env.PORT);
   console.log("NODE_ENV =", process.env.NODE_ENV);
   console.log("CLIENT_URL =", process.env.CLIENT_URL);
 
-  console.log(`🚀 BPKB IPB Server running on port ${PORT}`);
+  console.log(`🚀 BPKB IPB Server running on port ${process.env.PORT || 5000}`);
 });
 
 server.on("error", (err) => {
