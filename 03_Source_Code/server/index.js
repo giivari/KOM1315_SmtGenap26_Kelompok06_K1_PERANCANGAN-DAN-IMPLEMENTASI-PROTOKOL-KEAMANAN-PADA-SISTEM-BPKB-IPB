@@ -67,22 +67,10 @@ app.use(helmet({
  * Sebelumnya: origin: true (menerima semua domain — tidak aman)
  * Sekarang: hanya CLIENT_URL yang diizinkan
  */
-const allowedOrigins = [
-  process.env.CLIENT_URL || 'http://localhost:5174',
-  'https://bpkb-ipb.vercel.app',
-  'http://localhost:5173',
-  'http://localhost:3000',
-];
+const allowedOrigins = true; // Echo the request origin automatically
 
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, curl, Postman)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error('Not allowed by CORS'));
-  },
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
